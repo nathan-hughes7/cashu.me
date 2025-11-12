@@ -11,6 +11,8 @@ import { useSendTokensStore } from "src/stores/sendTokensStore";
 import { usePRStore } from "./payment-request";
 import { useWorkersStore } from "./workers";
 import { useInvoicesWorkerStore } from "./invoicesWorker";
+import * as nobleSecp256k1 from "@noble/secp256k1";
+import { bytesToHex } from "@noble/hashes/utils";
 
 import * as _ from "underscore";
 import token from "src/js/token";
@@ -76,6 +78,7 @@ export type InvoiceHistory = Invoice & {
   mintQuote?: MintQuoteResponse;
   meltQuote?: MeltQuoteResponse;
   label?: string; // Add label field for custom naming
+  privKey?: string; // Private key, if the quote is locked
 };
 
 type KeysetCounter = {
@@ -176,6 +179,9 @@ export const useWalletStore = defineStore("wallet", {
     },
   },
   actions: {
+    setMnemonicFromUser: function (mnemonic: string) {
+      this.mnemonic = mnemonic;
+    },
     mintWallet(url: string, unit: string): CashuWallet {
       // short-lived wallet for mint operations
       // note: the unit of the wallet will be activeUnit by default,
@@ -580,10 +586,19 @@ export const useWalletStore = defineStore("wallet", {
       mintWallet: CashuWallet
     ): Promise<MintQuoteResponse> {
       try {
-        // create MintQuotePayload(this.invoiceData.amount) payload
+        const { supported: nut20supported } = (
+          await mintWallet.lazyGetMintInfo()
+        ).isSupported(20);
+        const privkey = nut20supported
+          ? bytesToHex(nobleSecp256k1.utils.randomPrivateKey())
+          : undefined;
+        const pubkey = nut20supported
+          ? bytesToHex(nobleSecp256k1.getPublicKey(privkey!!, true))
+          : undefined;
         const payload: MintQuotePayload = {
           amount: amount,
           unit: mintWallet.unit,
+          pubkey: pubkey,
         };
         const data = await mintWallet.mint.createMintQuote(payload);
         this.invoiceData.amount = amount;
@@ -594,6 +609,7 @@ export const useWalletStore = defineStore("wallet", {
         this.invoiceData.mint = mintWallet.mint.mintUrl;
         this.invoiceData.unit = mintWallet.unit;
         this.invoiceData.mintQuote = data as MintQuoteResponse;
+        this.invoiceData.privKey = privkey;
         this.invoiceHistory.push({
           ...this.invoiceData,
         });
@@ -642,18 +658,19 @@ export const useWalletStore = defineStore("wallet", {
         const counter = this.keysetCounter(keysetId);
         const proofs = await mintWallet.mintProofs(
           invoice.amount,
-          invoice.quote,
+          invoice.mintQuote!!,
           {
             keysetId,
             counter,
             proofsWeHave: mintStore.mintUnitProofs(mint, invoice.unit),
+            privateKey: invoice.privKey,
           }
         );
         this.increaseKeysetCounter(keysetId, proofs.length);
         await proofsStore.addProofs(proofs);
 
         // update UI
-        await this.setInvoicePaid(invoice.quote);
+        this.setInvoicePaid(invoice.quote);
         useInvoicesWorkerStore().removeInvoiceFromChecker(invoice.quote);
 
         return proofs;
@@ -749,7 +766,8 @@ export const useWalletStore = defineStore("wallet", {
       proofs: WalletProof[],
       quote: MeltQuoteResponse,
       mintWallet: CashuWallet,
-      silent?: boolean
+      silent?: boolean,
+      releaseMutex?: boolean
     ) {
       const uIStore = useUiStore();
       const proofsStore = useProofsStore();
@@ -801,7 +819,7 @@ export const useWalletStore = defineStore("wallet", {
 
         // NOTE: if the user exits the app while we're in the API call, JS will emit an error that we would catch below!
         // We have to handle that case in the catch block below
-        uIStore.unlockMutex(); // Momentarely release the mutex (needed for concurrent melts)
+        if (releaseMutex) uIStore.unlockMutex(); // Momentarely release the mutex (needed for concurrent melts)
         let data;
         try {
           data = await mintWallet.meltProofs(quote, sendProofs, {
@@ -811,7 +829,7 @@ export const useWalletStore = defineStore("wallet", {
         } catch (error) {
           throw error;
         } finally {
-          await uIStore.lockMutex();
+          if (releaseMutex) await uIStore.lockMutex();
         }
 
         if (data.quote.state != MeltQuoteState.PAID) {

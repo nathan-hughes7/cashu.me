@@ -5,6 +5,7 @@ const defaultNostrRelays = [
   "wss://relay.damus.io",
   "wss://relay.8333.space/",
   "wss://nos.lol",
+  "wss://relay.primal.net",
 ];
 
 export const useSettingsStore = defineStore("settings", {
@@ -80,7 +81,7 @@ export const useSettingsStore = defineStore("settings", {
       ),
       bip177BitcoinSymbol: useLocalStorage<boolean>(
         "cashu.settings.bip177",
-        false
+        true
       ),
       multinutEnabled: useLocalStorage<boolean>(
         "cashu.settings.multinutEnabled",
@@ -88,7 +89,7 @@ export const useSettingsStore = defineStore("settings", {
       ),
       nostrMintBackupEnabled: useLocalStorage<boolean>(
         "cashu.settings.nostrMintBackupEnabled",
-        false
+        true
       ),
     };
   },

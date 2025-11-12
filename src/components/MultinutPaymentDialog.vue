@@ -293,7 +293,7 @@
   </q-dialog>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
 import { mapActions, mapState, mapWritableState } from "pinia";
 import { useMintsStore, MintClass } from "src/stores/mints";
@@ -945,7 +945,13 @@ export default defineComponent({
               );
               const mintClass = new MintClass(mint);
               const proofs = mintClass.unitProofs(activeUnit);
-              const result = await this.melt(proofs, quote, mintWallet, true);
+              const result = await this.melt(
+                proofs,
+                quote,
+                mintWallet,
+                true,
+                true // ! RELEASE THE MUTEX !
+              );
 
               // Mark as success
               this.setMintState(mint.url, "success");

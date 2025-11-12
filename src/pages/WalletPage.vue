@@ -16,7 +16,6 @@
             @click="showReceiveDialog = true"
           >
             <div class="button-content">
-              <q-icon name="south_west" size="1.2rem" class="q-mr-xs" />
               <span>{{ $t("WalletPage.actions.receive.label") }}</span>
             </div>
           </q-btn>
@@ -40,7 +39,6 @@
             @click="showSendDialog = true"
           >
             <div class="button-content">
-              <q-icon name="north_east" size="1.2rem" class="q-mr-xs" />
               <span>{{ $t("WalletPage.actions.send.label") }}</span>
             </div>
           </q-btn>
@@ -200,7 +198,7 @@
   padding-bottom: 15px;
 }
 </style>
-<script>
+<script lang="ts">
 import { date } from "quasar";
 import * as _ from "underscore";
 import { shortenString } from "src/js/string-utils";
@@ -618,6 +616,8 @@ export default {
   },
 
   created: async function () {
+    console.log(`Git commit: ${GIT_COMMIT}`);
+
     // Initialize and run migrations
     const migrationsStore = useMigrationsStore();
     migrationsStore.initMigrations();
@@ -675,7 +675,7 @@ export default {
       window.location.href.split("?")[0].split("#")[0]
     );
     */
-    console.log(`hash: ${window.location.hash}`);
+    console.log(`location.hash: ${window.location.hash}`);
 
     // startup tasks
 
@@ -691,8 +691,16 @@ export default {
     // PWA install hook
     this.registerPWAEventHook();
 
-    // generate new mnemonic
-    this.initializeMnemonic();
+    // generate mnemonic only if onboarding is finished or path is 'new'
+    try {
+      const welcome = useWelcomeStore();
+      if (!welcome.showWelcome || welcome.onboardingPath === "new") {
+        this.initializeMnemonic();
+      }
+    } catch (e) {
+      // fallback safe
+      this.initializeMnemonic();
+    }
 
     this.initSigner();
 

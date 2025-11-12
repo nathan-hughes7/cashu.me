@@ -294,6 +294,14 @@
             </div>
 
             <div
+              class="action-button cursor-pointer"
+              @click="openCreateReviewDialog"
+            >
+              <q-icon name="rate_review" size="20px" class="action-icon" />
+              <div class="action-label">Review Mint</div>
+            </div>
+
+            <div
               class="action-button delete-button cursor-pointer"
               @click="openRemoveMintDialog"
             >
@@ -309,7 +317,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
 import { mapActions, mapState, mapWritableState } from "pinia";
 import VueQrcode from "@chenfengyuan/vue-qrcode";
@@ -426,7 +434,11 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useMintsStore, ["removeMint"]),
+    ...mapActions(useMintsStore, [
+      "removeMint",
+      "fetchMintInfo",
+      "triggerMintInfoMotdChanged",
+    ]),
     shortenText: function (text, maxLength) {
       if (text.length > maxLength) {
         return text.substring(0, maxLength) + "...";
@@ -450,9 +462,37 @@ export default defineComponent({
       this.mintToRemove = Object.assign({}, this.mintData);
       this.showRemoveMintDialog = true;
     },
+    openCreateReviewDialog() {
+      // Navigate to create review page
+      this.$router.push({
+        path: "/createreview",
+        query: {
+          mintUrl: this.mintData.url,
+        },
+      });
+    },
     dismissMotd() {
       // Handle MOTD dismissal
       this.motdDismissed = true;
+    },
+    async refreshMintInfo() {
+      try {
+        console.log("Refreshing mint info for:", this.mintData.url);
+        const newMintInfo = await this.fetchMintInfo(this.mintData);
+        this.triggerMintInfoMotdChanged(newMintInfo, this.mintData, false);
+        const mintsStore = useMintsStore();
+        const target = mintsStore.mints.find(
+          (m) => m.url === this.mintData.url
+        );
+        if (target) {
+          target.info = newMintInfo;
+        }
+        if (this.mintData) {
+          this.mintData.info = newMintInfo;
+        }
+      } catch (error) {
+        console.log("Failed to fetch mint info:", error);
+      }
     },
   },
   created() {
@@ -464,6 +504,7 @@ export default defineComponent({
       );
       if (mint) {
         this.mintData = mint;
+        this.refreshMintInfo();
       } else {
         // Mint not found, redirect back
         this.$router.push("/");

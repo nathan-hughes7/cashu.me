@@ -84,9 +84,9 @@ export const usePRStore = defineStore("payment-request", {
           }
         }
         if (!foundMint) {
-          notifyError("We do not know the mint in the payment request");
+          notifyError(`This payment requires using the mint: ${request.mints}`);
           throw new Error(
-            `We do not know the mint in the payment request: ${request.mints}`
+            `This payment requires using the mint: ${request.mints}`
           );
         }
       }
@@ -161,7 +161,7 @@ export const usePRStore = defineStore("payment-request", {
         );
       } catch (error) {
         console.error("Error paying payment request:", error);
-        notifyError("Could not pay request");
+        notifyError(`${error.message}`, "Could not pay request");
       }
       notifySuccess("Payment sent");
     },
@@ -197,13 +197,13 @@ export const usePRStore = defineStore("payment-request", {
         });
         if (!response.ok) {
           console.error("Error paying payment request:", response.statusText);
-          notifyError("Could not pay request");
+          notifyError(`${response.statusText}`, "Could not pay request");
           return;
         }
         notifySuccess("Payment sent");
       } catch (error) {
         console.error("Error paying payment request:", error);
-        notifyError("Could not pay request");
+        notifyError(`${error.message}`, "Could not pay request");
       }
     },
   },

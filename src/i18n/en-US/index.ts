@@ -287,9 +287,8 @@ export default {
           description: "Store URL to this wallet with token",
         },
         binary: {
-          title: "Raw Binary",
-          description:
-            "Raw bytes instead of Base64. Makes ~33% shorter tokens.",
+          title: "Binary",
+          description: "Store tokens as binary data",
         },
         quick_access: {
           toggle: "Quick access to NFC",
@@ -419,6 +418,24 @@ export default {
         toggle: "Use ₿ symbol",
       },
     },
+    web_of_trust: {
+      title: "Web of trust",
+      known_pubkeys: "Known pubkeys: {wotCount}",
+      continue_crawl: "Continue crawl",
+      crawl_odell: "Crawl ODELL'S WEB OF TRUST",
+      crawl_wot: "Crawl web of trust",
+      pause: "Pause",
+      reset: "Reset",
+      progress: "{crawlProcessed} / {crawlTotal}",
+    },
+    npub_cash: {
+      use_npubx: "Use npubx.cash",
+      copy_lightning_address: "Copy Lightning address",
+      v2_mint: "npub.cash v2 mint",
+    },
+    multinut: {
+      use_multinut: "Use Multinut",
+    },
     advanced: {
       title: "Advanced",
       developer: {
@@ -453,6 +470,7 @@ export default {
           title: "Increment keyset counters",
           description:
             'Click the keyset ID to increment the derivation path counters for the keysets in your wallet. This is useful if you see the "outputs have already been signed" error.',
+          counter: "counter: {count}",
         },
         unset_reserved: {
           button: "Unset all reserved tokens",
@@ -586,9 +604,13 @@ export default {
   },
   WelcomeSlide2: {
     title: "Install PWA",
+    alt: {
+      pwa_example: "PWA Installation Example",
+    },
+    installing: "Installing…",
     instruction: {
       intro: {
-        text: "For the best experience, use this wallet with your device's native web browser to install it as a Progressive Web App. Do this right now.",
+        text: "For the best experience, use this wallet with your device's native web browser to install it as a Progressive Web App.",
       },
       android: {
         title: "Android (Chrome)",
@@ -622,6 +644,8 @@ export default {
       success: {
         title: "Success!",
         text: "You are using Cashu as a PWA. Close any other open browser windows and use the app from your home screen.",
+        nextSteps:
+          "You can now close this browser tab and open the app from your home screen.",
       },
     },
   },
@@ -657,6 +681,81 @@ export default {
       checkbox: {
         label: "I've read and accept these terms and conditions",
       },
+    },
+  },
+  WelcomeSlideChoice: {
+    title: "Set up your wallet",
+    text: "Do you want to recover from a seed phrase or create a new wallet?",
+    options: {
+      new: {
+        title: "Create new wallet",
+        subtitle: "Generate a new seed and add mints.",
+      },
+      recover: {
+        title: "Recover wallet",
+        subtitle: "Enter your seed phrase, restore mints and ecash.",
+      },
+    },
+  },
+  WelcomeMintSetup: {
+    title: "Add mints",
+    text: "Mints are servers that help you send and receive ecash. Choose a discovered mint or add one manually. Skip to add mints later.",
+    sections: {
+      your_mints: "Your mints",
+    },
+    restoring: "Restoring mints…",
+    placeholder: {
+      mint_url: "https://",
+    },
+  },
+  WelcomeRecoverSeed: {
+    title: "Enter your seed phrase",
+    text: "Paste or type your 12 word seed phrase to recover.",
+    inputs: {
+      word: "Word { index }",
+    },
+    actions: {
+      paste_all: "Paste all",
+    },
+    disclaimer:
+      "Your seed phrase is only used locally to derive your wallet keys.",
+  },
+  WelcomeRestoreEcash: {
+    title: "Restore your ecash",
+    text: "Scan for unspent proofs on your configured mints and add them to your wallet.",
+  },
+  MintRatings: {
+    title: "Mint Reviews",
+    reviews: "reviews",
+    ratings: "Ratings",
+    no_reviews: "No reviews found",
+    your_review: "Your review",
+    no_reviews_to_display: "No reviews to display.",
+    no_rating: "No rating",
+    out_of: "out of",
+    rows: "Reviews",
+    sort: "Sort",
+    sort_options: {
+      newest: "Newest",
+      oldest: "Oldest",
+      highest: "Highest",
+      lowest: "Lowest",
+    },
+    actions: {
+      write_review: "Write a review",
+    },
+    empty_state_subtitle:
+      "Help by leaving a review. Share your experience with this mint and help others by leaving a review.",
+  },
+  CreateMintReview: {
+    title: "Review Mint",
+    publishing_as: "Publishing as",
+    inputs: {
+      rating: { label: "Rating" },
+      review: { label: "Review (optional)" },
+    },
+    actions: {
+      publish: { label: "Submit Review", in_progress: "Submitting…" },
     },
   },
   RestoreView: {
@@ -765,7 +864,7 @@ export default {
       recommendations: {
         overline: "Found { length } mints",
         caption:
-          "These mints were recommended by other Nostr users. Read reviews at { link }. Be careful and do your own research before using a mint.",
+          "These mints were recommended by other Nostr users. Be careful and do your own research before using a mint.",
         actions: {
           browse: {
             label: "Click to browse mints",
@@ -786,7 +885,7 @@ export default {
           label: "To",
         },
         amount: {
-          label: "Amount ({ ticker }))",
+          label: "Amount ({ ticker })",
         },
       },
       actions: {
@@ -796,6 +895,10 @@ export default {
         },
       },
     },
+    error_badge: "Error",
+    reviews_text: "reviews",
+    no_reviews_yet: "No reviews yet",
+    discover_mints_button: "Discover mints",
   },
   QrcodeReader: {
     progress: {

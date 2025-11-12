@@ -32,7 +32,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
 import { mapActions, mapState, mapWritableState } from "pinia";
 import { useMintsStore } from "stores/mints";
@@ -70,8 +70,8 @@ export default defineComponent({
           this.sendData.tokensBase64
         );
       } catch (error) {
-        console.error(error);
-        notifyError("Error paying payment request");
+        console.error("Error paying payment request:", error);
+        notifyError(`${error.message}`, "Could not pay request");
       } finally {
         this.loading = false;
       }
